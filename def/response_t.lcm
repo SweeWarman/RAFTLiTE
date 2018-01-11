@@ -1,0 +1,11 @@
+package LcmRaftMessages;
+
+struct response_t
+{
+    int64_t timeStamp;
+    string sender;
+    string receiver;
+    int64_t intersectionID;
+    int64_t term;
+    boolean data;
+}

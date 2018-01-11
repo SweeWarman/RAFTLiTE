@@ -1,0 +1,8 @@
+package LcmRaftMessages;
+
+struct heartbeat_t
+{
+    int64_t timeStamp;
+    string sender;
+    int64_t intersection;
+}
