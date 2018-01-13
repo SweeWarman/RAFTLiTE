@@ -1,9 +1,9 @@
 package LcmRaftMessages;
 
-struct heartbeat_t
+struct request_membership_t
 {
     int64_t timeStamp;
     string sender;
     string receiver;
-    int64_t intersection;
+    boolean request;
 }

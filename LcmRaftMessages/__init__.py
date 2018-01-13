@@ -8,3 +8,5 @@ from .vote_response_t import vote_response_t
 from .response_t import response_t
 from .heartbeat_t import heartbeat_t
 from .append_entries_t import append_entries_t
+from .request_membership_t import request_membership_t
+from .client_status_t import client_status_t

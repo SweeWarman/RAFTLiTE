@@ -7,5 +7,5 @@ struct response_t
     string receiver;
     int64_t intersectionID;
     int64_t term;
-    boolean data;
+    int64_t data; //data 0 success, 1 append_entry failure, 2 term failure
 }

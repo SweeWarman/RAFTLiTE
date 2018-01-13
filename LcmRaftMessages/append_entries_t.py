@@ -10,14 +10,25 @@ except ImportError:
 import struct
 
 class append_entries_t(object):
-    __slots__ = ["timeStamp", "sender", "receiver", "intersectionID", "term"]
+    __slots__ = ["timeStamp", "sender", "receiver", "term", "nodes", "nodeID", "entryType", "leaderCommit", "logIndex", "intersectionID", "vehicleID", "entryTime", "exitTime", "crossingTime", "prevLogIndex", "prevLogTerm"]
 
     def __init__(self):
         self.timeStamp = 0
         self.sender = ""
         self.receiver = ""
-        self.intersectionID = 0
         self.term = 0
+        self.nodes = 0
+        self.nodeID = [ 0 for dim0 in range(10) ]
+        self.entryType = 0
+        self.leaderCommit = 0
+        self.logIndex = 0
+        self.intersectionID = 0
+        self.vehicleID = ""
+        self.entryTime = 0.0
+        self.exitTime = 0.0
+        self.crossingTime = 0.0
+        self.prevLogIndex = 0
+        self.prevLogTerm = 0
 
     def encode(self):
         buf = BytesIO()
@@ -35,7 +46,14 @@ class append_entries_t(object):
         buf.write(struct.pack('>I', len(__receiver_encoded)+1))
         buf.write(__receiver_encoded)
         buf.write(b"\0")
-        buf.write(struct.pack(">qq", self.intersectionID, self.term))
+        buf.write(struct.pack(">qq", self.term, self.nodes))
+        buf.write(struct.pack('>10q', *self.nodeID[:10]))
+        buf.write(struct.pack(">qqqq", self.entryType, self.leaderCommit, self.logIndex, self.intersectionID))
+        __vehicleID_encoded = self.vehicleID.encode('utf-8')
+        buf.write(struct.pack('>I', len(__vehicleID_encoded)+1))
+        buf.write(__vehicleID_encoded)
+        buf.write(b"\0")
+        buf.write(struct.pack(">dddqq", self.entryTime, self.exitTime, self.crossingTime, self.prevLogIndex, self.prevLogTerm))
 
     def decode(data):
         if hasattr(data, 'read'):
@@ -54,14 +72,19 @@ class append_entries_t(object):
         self.sender = buf.read(__sender_len)[:-1].decode('utf-8', 'replace')
         __receiver_len = struct.unpack('>I', buf.read(4))[0]
         self.receiver = buf.read(__receiver_len)[:-1].decode('utf-8', 'replace')
-        self.intersectionID, self.term = struct.unpack(">qq", buf.read(16))
+        self.term, self.nodes = struct.unpack(">qq", buf.read(16))
+        self.nodeID = struct.unpack('>10q', buf.read(80))
+        self.entryType, self.leaderCommit, self.logIndex, self.intersectionID = struct.unpack(">qqqq", buf.read(32))
+        __vehicleID_len = struct.unpack('>I', buf.read(4))[0]
+        self.vehicleID = buf.read(__vehicleID_len)[:-1].decode('utf-8', 'replace')
+        self.entryTime, self.exitTime, self.crossingTime, self.prevLogIndex, self.prevLogTerm = struct.unpack(">dddqq", buf.read(40))
         return self
     _decode_one = staticmethod(_decode_one)
 
     _hash = None
     def _get_hash_recursive(parents):
         if append_entries_t in parents: return 0
-        tmphash = (0x1c55235c0e640745) & 0xffffffffffffffff
+        tmphash = (0x2ff9828c4eb1fecb) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)
