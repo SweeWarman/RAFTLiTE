@@ -15,6 +15,7 @@ class Neutral(State):
         self.newServerDiscoveredTime = 0
         self.entryRequestMade = False
         self.entryRequestServer = ""
+        self.name = "NEUTRAL"
 
 
     def on_heartbeat(self,message):

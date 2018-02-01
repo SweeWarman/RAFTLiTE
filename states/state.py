@@ -18,6 +18,9 @@ class EntryType(enum.Enum):
 
 class State(object):
 
+    def __init__(self):
+        self.name = "STATE"
+
     def set_server(self, server):
         self._server = server
         self._server._expectResponse = False

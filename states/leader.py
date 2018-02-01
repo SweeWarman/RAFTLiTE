@@ -11,6 +11,7 @@ class Leader(State):
         self._currentTerm = term
         self._nextIndexes = defaultdict(int)
         self._matchIndex = defaultdict(int)
+        self.name = "LEADER"
 
 
     def set_server(self, server):

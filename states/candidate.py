@@ -6,6 +6,8 @@ import time, random
 
 
 class Candidate(Voter):
+    def __init__(self):
+        self.name = "CANDIDATE"
 
     def set_server(self, server):
         self._server = server

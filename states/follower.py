@@ -9,6 +9,7 @@ class Follower(Voter):
         Voter.__init__(self)
         self._timeout = timeout
         self._timeoutTime = self._nextTimeout()
+        self.name = "FOLLOWER"
 
     def on_response_received(self, message):
         # Was the last AppendEntries good?
