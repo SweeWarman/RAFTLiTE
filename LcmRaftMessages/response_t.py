@@ -10,13 +10,12 @@ except ImportError:
 import struct
 
 class response_t(object):
-    __slots__ = ["timeStamp", "sender", "receiver", "intersectionID", "term", "data"]
+    __slots__ = ["timeStamp", "sender", "receiver", "term", "data"]
 
     def __init__(self):
         self.timeStamp = 0
         self.sender = ""
         self.receiver = ""
-        self.intersectionID = 0
         self.term = 0
         self.data = 0
 
@@ -36,7 +35,7 @@ class response_t(object):
         buf.write(struct.pack('>I', len(__receiver_encoded)+1))
         buf.write(__receiver_encoded)
         buf.write(b"\0")
-        buf.write(struct.pack(">qqq", self.intersectionID, self.term, self.data))
+        buf.write(struct.pack(">qq", self.term, self.data))
 
     def decode(data):
         if hasattr(data, 'read'):
@@ -55,14 +54,14 @@ class response_t(object):
         self.sender = buf.read(__sender_len)[:-1].decode('utf-8', 'replace')
         __receiver_len = struct.unpack('>I', buf.read(4))[0]
         self.receiver = buf.read(__receiver_len)[:-1].decode('utf-8', 'replace')
-        self.intersectionID, self.term, self.data = struct.unpack(">qqq", buf.read(24))
+        self.term, self.data = struct.unpack(">qq", buf.read(16))
         return self
     _decode_one = staticmethod(_decode_one)
 
     _hash = None
     def _get_hash_recursive(parents):
         if response_t in parents: return 0
-        tmphash = (0x880711ac83f8909e) & 0xffffffffffffffff
+        tmphash = (0x706bd8d2d95c8616) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)

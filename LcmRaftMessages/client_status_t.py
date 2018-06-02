@@ -10,15 +10,11 @@ except ImportError:
 import struct
 
 class client_status_t(object):
-    __slots__ = ["timeStamp", "intersectionID", "vehicleID", "entryTime", "exitTime", "crossingTime"]
+    __slots__ = ["timeStamp", "data"]
 
     def __init__(self):
         self.timeStamp = 0
-        self.intersectionID = 0
-        self.vehicleID = ""
-        self.entryTime = 0.0
-        self.exitTime = 0.0
-        self.crossingTime = 0.0
+        self.data = [ 0.0 for dim0 in range(10) ]
 
     def encode(self):
         buf = BytesIO()
@@ -27,12 +23,8 @@ class client_status_t(object):
         return buf.getvalue()
 
     def _encode_one(self, buf):
-        buf.write(struct.pack(">qq", self.timeStamp, self.intersectionID))
-        __vehicleID_encoded = self.vehicleID.encode('utf-8')
-        buf.write(struct.pack('>I', len(__vehicleID_encoded)+1))
-        buf.write(__vehicleID_encoded)
-        buf.write(b"\0")
-        buf.write(struct.pack(">ddd", self.entryTime, self.exitTime, self.crossingTime))
+        buf.write(struct.pack(">q", self.timeStamp))
+        buf.write(struct.pack('>10d', *self.data[:10]))
 
     def decode(data):
         if hasattr(data, 'read'):
@@ -46,17 +38,15 @@ class client_status_t(object):
 
     def _decode_one(buf):
         self = client_status_t()
-        self.timeStamp, self.intersectionID = struct.unpack(">qq", buf.read(16))
-        __vehicleID_len = struct.unpack('>I', buf.read(4))[0]
-        self.vehicleID = buf.read(__vehicleID_len)[:-1].decode('utf-8', 'replace')
-        self.entryTime, self.exitTime, self.crossingTime = struct.unpack(">ddd", buf.read(24))
+        self.timeStamp = struct.unpack(">q", buf.read(8))[0]
+        self.data = struct.unpack('>10d', buf.read(80))
         return self
     _decode_one = staticmethod(_decode_one)
 
     _hash = None
     def _get_hash_recursive(parents):
         if client_status_t in parents: return 0
-        tmphash = (0xaeba227a90003bb6) & 0xffffffffffffffff
+        tmphash = (0x233f526476431c53) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)

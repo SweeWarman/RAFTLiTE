@@ -10,13 +10,12 @@ except ImportError:
 import struct
 
 class heartbeat_t(object):
-    __slots__ = ["timeStamp", "sender", "receiver", "intersection"]
+    __slots__ = ["timeStamp", "sender", "receiver"]
 
     def __init__(self):
         self.timeStamp = 0
         self.sender = ""
         self.receiver = ""
-        self.intersection = 0
 
     def encode(self):
         buf = BytesIO()
@@ -34,7 +33,6 @@ class heartbeat_t(object):
         buf.write(struct.pack('>I', len(__receiver_encoded)+1))
         buf.write(__receiver_encoded)
         buf.write(b"\0")
-        buf.write(struct.pack(">q", self.intersection))
 
     def decode(data):
         if hasattr(data, 'read'):
@@ -53,14 +51,13 @@ class heartbeat_t(object):
         self.sender = buf.read(__sender_len)[:-1].decode('utf-8', 'replace')
         __receiver_len = struct.unpack('>I', buf.read(4))[0]
         self.receiver = buf.read(__receiver_len)[:-1].decode('utf-8', 'replace')
-        self.intersection = struct.unpack(">q", buf.read(8))[0]
         return self
     _decode_one = staticmethod(_decode_one)
 
     _hash = None
     def _get_hash_recursive(parents):
         if heartbeat_t in parents: return 0
-        tmphash = (0xb2a0dba8c38e5779) & 0xffffffffffffffff
+        tmphash = (0x5f89906165d80bc0) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)
