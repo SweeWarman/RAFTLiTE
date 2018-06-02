@@ -2,23 +2,20 @@ package LcmRaftMessages;
 
 struct append_entries_t
 {
+
+    // Protocol specific data
     int64_t timeStamp;
     string sender;
     string receiver;
-
     int64_t term;
     int64_t nodes;
     int64_t nodeID[10];
     int64_t entryType;
-
     int64_t leaderCommit;
     int64_t logIndex;
-    int64_t intersectionID;
-    string vehicleID;
-    double entryTime;
-    double exitTime;
-    double crossingTime;
-
     int64_t prevLogIndex;
     int64_t prevLogTerm;
+
+    // data
+    double data[10];
 }

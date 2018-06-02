@@ -3,9 +3,7 @@ package LcmRaftMessages;
 struct client_status_t
 {
     int64_t timeStamp;
-    int64_t intersectionID;
-    string vehicleID;
-    double entryTime;
-    double exitTime;
-    double crossingTime;
+    
+    // data
+    double data[10];
 }

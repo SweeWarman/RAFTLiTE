@@ -5,5 +5,4 @@ struct heartbeat_t
     int64_t timeStamp;
     string sender;
     string receiver;
-    int64_t intersection;
 }
