@@ -42,16 +42,17 @@ class Leader(State):
         log_entry = {}
         log_entry["entryType"] = EntryType.DATA.value
         log_entry["term"] = self._server._currentTerm
-        log_entry["intersectionID"] = message.intersectionID
-        log_entry["vehicleID"] = message.vehicleID
-        log_entry["entryTime"] = message.entryTime
-        log_entry["exitTime"] = message.exitTime
-        log_entry["crossingTime"] = message.crossingTime
+        
+        #log_entry["intersectionID"] = message.intersectionID
+        #log_entry["vehicleID"] = message.vehicleID
+        #log_entry["entryTime"] = message.entryTime
+        #log_entry["exitTime"] = message.exitTime
+        #log_entry["crossingTime"] = message.crossingTime
 
         if not self.CheckIfAlreadyAvailable(log_entry):
             self._server._log.append(log_entry)
             self._server._lastLogIndex += 1
-            print "received new client status from:" + message.vehicleID
+            print "received new client status from:" + message.sender
 
 
         return self,None
@@ -62,8 +63,7 @@ class Leader(State):
         log.reverse()
         for i,element in enumerate(log):
             if element["entryType"] == EntryType.DATA.value:
-                if element["vehicleID"] == entry["vehicleID"]:
-                    if abs(element["crossingTime"] - entry["crossingTime"]) < 0.5:
+                if sum(element["data"]) == sum(entry["data"]):
                         #print "Entry already available"
                         return True
             if element["entryType"] == EntryType.COMMAND.value:
@@ -79,7 +79,6 @@ class Leader(State):
         log_entry = {}
         log_entry["entryType"] = EntryType.COMMAND.value
         log_entry["term"] = self._server._currentTerm
-        log_entry["intersectionID"] = id
 
         self._server._log.append(log_entry)
         self._server._lastLogIndex += 1
@@ -178,20 +177,20 @@ class Leader(State):
 
         entry.logIndex = logIndex
         entry.entryType = log_entry["entryType"]
-        entry.intersectionID =  log_entry["intersectionID"]
 
         if entry.entryType == EntryType.DATA.value:
-            entry.vehicleID = log_entry["vehicleID"]
-            entry.leaderCommit = self._server._commitIndex
-            entry.entryTime = log_entry["entryTime"]
-            entry.exitTime = log_entry["exitTime"]
-            entry.crossingTime = log_entry["crossingTime"]
-        else:
-            entry.vehicleID = "NONE"
-            entry.leaderCommit = 0
-            entry.entryTime = 0
-            entry.exitTime = 0
-            entry.crossingTime = 0
+            entry.data = log_entry["data"]
+            #entry.vehicleID = log_entry["vehicleID"]
+            #entry.leaderCommit = self._server._commitIndex
+            #entry.entryTime = log_entry["entryTime"]
+            #entry.exitTime = log_entry["exitTime"]
+            #entry.crossingTime = log_entry["crossingTime"]
+        #else:
+            #entry.vehicleID = "NONE"
+            #entry.leaderCommit = 0
+            #entry.entryTime = 0
+            #entry.exitTime = 0
+            #entry.crossingTime = 0
 
         entry.prevLogIndex = self._nextIndexes[receiver]-1
         if entry.prevLogIndex > 0:
