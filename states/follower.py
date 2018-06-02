@@ -29,12 +29,16 @@ class Follower(Voter):
         :param append_entries_t message: lcm append entries message
         :return:
         """
-
+        
+        # Get the next append entry timeout. Note if this timeout is elapsed,
+        # a relection should be triggered.
         self._timeoutTime = self._nextTimeout()
 
         self._server._leader = message.sender
         self._server._commitIndex = min(message.leaderCommit,len(self._server._log))
 
+        # if the term in the incoming message is lower than this nodes current term,
+        # notify the leader
         if(message.term < self._server._currentTerm):
             self._send_response_message(message, ResponseType.INCORRECT_TERM)
             return self, None
@@ -46,7 +50,7 @@ class Follower(Voter):
         # Add nodeIDs in message to connectedServers if they are
         # not already available
         for i,node in enumerate(message.nodeID):
-            nodeName = "vehicle"+str(node)
+            nodeName = "NODE"+str(node)
             nameListAvail.append(nodeName)
             if nodeName == self._server._name:
                 active = True
@@ -72,21 +76,24 @@ class Follower(Voter):
 
         if (message.entryType != EntryType.HBEAT.value):
             log = self._server._log
-            data = {}
-            data["leaderCommit"] = message.leaderCommit
-            data["intersectionID"] = message.intersectionID
-            data["vehicleID"] = message.vehicleID
-            data["entryType"] = message.entryType
-            data["entryTime"] = message.entryTime
-            data["exitTime"] = message.exitTime
-            data["crossingTime"] = message.crossingTime
-            data["prevLogIndex"] = message.prevLogIndex
-            data["prevLogTerm"] = message.prevLogTerm
+            newlogentry = {}
+            
+            newlogentry["leaderCommit"] = message.leaderCommit
+            newlogentry["prevLogIndex"] = message.prevLogIndex
+            newlogentry["prevLogTerm"] = message.prevLogTerm
+            newlogentry["data"] = message.data
+
+            #newlogentry["intersectionID"] = message.intersectionID
+            #newlogentry["vehicleID"] = message.vehicleID
+            #newlogentry["entryType"] = message.entryType
+            #newlogentry["entryTime"] = message.entryTime
+            #newlogentry["exitTime"] = message.exitTime
+            #newlogentry["crossingTime"] = message.crossingTime
 
 
             # Can't possibly be up-to-date with the log
             # If the log is smaller than the preLogIndex
-            if (len(log) < data["prevLogIndex"]):
+            if (len(log) < newlogentry["prevLogIndex"]):
                 print "APPEND FAILURE"
                 self._send_response_message(message, ResponseType.APPEND_FAILURE)
                 return self, None
@@ -94,17 +101,17 @@ class Follower(Voter):
             # We need to hold the induction proof of the algorithm here.
             #   So, we make sure that the prevLogIndex term is always
             #   equal to the server.
-            if (len(log) > 0 and log[data["prevLogIndex"]-1]["term"] != data["prevLogTerm"]):
+            if (len(log) > 0 and log[newlogentry["prevLogIndex"]-1]["term"] != newlogentry["prevLogTerm"]):
 
                 # There is a conflict we need to resync so delete everything
                 #   from this prevLogIndex and forward and send a failure
                 #   to the server.
-                log = log[:data["prevLogIndex"]]
+                log = log[:newlogentry["prevLogIndex"]]
                 print "APPEND FAILURE"
                 self._send_response_message(message, ResponseType.APPEND_FAILURE)
                 self._server._log = log
-                self._server._lastLogIndex = data["prevLogIndex"]
-                self._server._lastLogTerm = data["prevLogTerm"]
+                self._server._lastLogIndex = newlogentry["prevLogIndex"]
+                self._server._lastLogTerm = newlogentry["prevLogTerm"]
                 return self, None
             # The induction proof held so lets check if the commitIndex
             #   value is the same as the one on the leader
@@ -112,9 +119,9 @@ class Follower(Voter):
                 # Make sure that leaderCommit is > 0 and that the
                 #   data is different here
                 if (len(log) > 0 and
-                    len(log) >= data["leaderCommit"] and
-                    data["leaderCommit"] > 0 and
-                    log[data["leaderCommit"]-1]["term"] != message.term):
+                    len(log) >= newlogentry["leaderCommit"] and
+                    newlogentry["leaderCommit"] > 0 and
+                    log[newlogentry["leaderCommit"]-1]["term"] != message.term):
                     # Data was found to be different so we fix that
                     #   by taking the current log and slicing it to the
                     #   leaderCommit + 1 range then setting the last
@@ -122,18 +129,20 @@ class Follower(Voter):
                     log = log[:self._server._commitIndex]
                     entry = {}
                     entry["term"] = message.term
-                    entry["intersectionID"] = data["intersectionID"]
-                    entry["vehicleID"] = data["vehicleID"]
-                    entry["entryType"] = data["entryType"]
-                    entry["entryTime"] = data["entryTime"]
-                    entry["exitTime"] = data["exitTime"]
-                    entry["crossingTime"] = data["crossingTime"]
+                    entry["entryType"] = message.entryType
+                    entry["data"] = message.data
+                    
+                    #entry["intersectionID"] = newlogentry["intersectionID"]
+                    #entry["vehicleID"] = newlogentry["vehicleID"]
+                    #entry["entryTime"] = newlogentry["entryTime"]
+                    #entry["exitTime"] = newlogentry["exitTime"]
+                    #entry["crossingTime"] = newlogentry["crossingTime"]
 
                     log.append(entry)
                     self._send_response_message(message,ResponseType.APPEND_SUCCESS)
                     self._server._lastLogIndex = len(log)
                     self._server._lastLogTerm = log[-1]["term"]
-                    self._server._commitIndex = min(data["leaderCommit"],len(log))
+                    self._server._commitIndex = min(newlogentry["leaderCommit"],len(log))
                     self._server._log = log
                     print log
                 else:
@@ -148,17 +157,20 @@ class Follower(Voter):
 
                     entry = {}
                     entry["term"] = message.term
-                    entry["intersectionID"] = data["intersectionID"]
-                    entry["vehicleID"] = data["vehicleID"]
-                    entry["entryType"] = data["entryType"]
-                    entry["entryTime"] = data["entryTime"]
-                    entry["exitTime"] = data["exitTime"]
-                    entry["crossingTime"] = data["crossingTime"]
+                    entry["entryType"] = message.entryType
+                    entry["data"] = message.data
+                    
+                    #entry["intersectionID"] = newlogentry["intersectionID"]
+                    #entry["vehicleID"] = newlogentry["vehicleID"]
+                    #entry["entryType"] = newlogentry["entryType"]
+                    #entry["entryTime"] = newlogentry["entryTime"]
+                    #entry["exitTime"] = newlogentry["exitTime"]
+                    #entry["crossingTime"] = newlogentry["crossingTime"]
 
                     log.append(entry)
                     self._server._lastLogIndex = max(0,len(log))
                     self._server._lastLogTerm = max(0,log[-1]["term"])
-                    self._server._commitIndex = min(data["leaderCommit"],len(log))
+                    self._server._commitIndex = min(newlogentry["leaderCommit"],len(log))
                     self._server._log = log
                     self._send_response_message(message,ResponseType.APPEND_SUCCESS)
                     print log
