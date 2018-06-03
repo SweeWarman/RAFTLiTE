@@ -42,7 +42,7 @@ class Leader(State):
         log_entry = {}
         log_entry["entryType"] = EntryType.DATA.value
         log_entry["term"] = self._server._currentTerm
-        
+        log_entry["data"] = message.data 
         #log_entry["intersectionID"] = message.intersectionID
         #log_entry["vehicleID"] = message.vehicleID
         #log_entry["entryTime"] = message.entryTime
@@ -52,7 +52,7 @@ class Leader(State):
         if not self.CheckIfAlreadyAvailable(log_entry):
             self._server._log.append(log_entry)
             self._server._lastLogIndex += 1
-            print "received new client status from:" + message.sender
+            print "received new client status from" 
 
 
         return self,None
@@ -235,6 +235,7 @@ class Leader(State):
                     print "sending entry to: " + follower
                     logIndex = self._nextIndexes[follower]
                     log_entry = self._server._log[logIndex-1]
+                    print "*** Start Log ****"
                     print log_entry
                     self._send_append_entries(follower,logIndex,log_entry)
                     sent = True

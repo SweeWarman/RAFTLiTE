@@ -83,13 +83,6 @@ class Follower(Voter):
             newlogentry["prevLogTerm"] = message.prevLogTerm
             newlogentry["data"] = message.data
 
-            #newlogentry["intersectionID"] = message.intersectionID
-            #newlogentry["vehicleID"] = message.vehicleID
-            #newlogentry["entryType"] = message.entryType
-            #newlogentry["entryTime"] = message.entryTime
-            #newlogentry["exitTime"] = message.exitTime
-            #newlogentry["crossingTime"] = message.crossingTime
-
 
             # Can't possibly be up-to-date with the log
             # If the log is smaller than the preLogIndex
@@ -132,11 +125,6 @@ class Follower(Voter):
                     entry["entryType"] = message.entryType
                     entry["data"] = message.data
                     
-                    #entry["intersectionID"] = newlogentry["intersectionID"]
-                    #entry["vehicleID"] = newlogentry["vehicleID"]
-                    #entry["entryTime"] = newlogentry["entryTime"]
-                    #entry["exitTime"] = newlogentry["exitTime"]
-                    #entry["crossingTime"] = newlogentry["crossingTime"]
 
                     log.append(entry)
                     self._send_response_message(message,ResponseType.APPEND_SUCCESS)
@@ -144,7 +132,11 @@ class Follower(Voter):
                     self._server._lastLogTerm = log[-1]["term"]
                     self._server._commitIndex = min(newlogentry["leaderCommit"],len(log))
                     self._server._log = log
-                    print log
+
+
+                    print "*** Start Log ****"
+                    for entry in log: 
+                        print entry
                 else:
                     # The commit index is not out of the range of the log
                     #   so we can just append it to the log now.
@@ -160,12 +152,6 @@ class Follower(Voter):
                     entry["entryType"] = message.entryType
                     entry["data"] = message.data
                     
-                    #entry["intersectionID"] = newlogentry["intersectionID"]
-                    #entry["vehicleID"] = newlogentry["vehicleID"]
-                    #entry["entryType"] = newlogentry["entryType"]
-                    #entry["entryTime"] = newlogentry["entryTime"]
-                    #entry["exitTime"] = newlogentry["exitTime"]
-                    #entry["crossingTime"] = newlogentry["crossingTime"]
 
                     log.append(entry)
                     self._server._lastLogIndex = max(0,len(log))
@@ -173,7 +159,12 @@ class Follower(Voter):
                     self._server._commitIndex = min(newlogentry["leaderCommit"],len(log))
                     self._server._log = log
                     self._send_response_message(message,ResponseType.APPEND_SUCCESS)
-                    print log
+
+    
+                    print "*** Start Log ****"
+                    for entry in log: 
+                        print entry
+
 
             return self, None
         else:
