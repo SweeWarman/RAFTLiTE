@@ -1,6 +1,10 @@
+
+import sys
+sys.path.append("../")
+
 from voter import Voter
 from leader import Leader
-from ..LcmRaftMessages import *
+from LcmRaftMessages import *
 from follower import Follower
 import time, random
 

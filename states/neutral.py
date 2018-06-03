@@ -1,10 +1,11 @@
-
+import sys
+sys.path.append("../")
 from state import State,ResponseType
 from follower import Follower
 import time
 
 
-from ..LcmRaftMessages import *
+from LcmRaftMessages import *
 
 class Neutral(State):
 

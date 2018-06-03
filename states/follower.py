@@ -1,5 +1,9 @@
+
+import sys
+sys.path.append("../")
+
 from voter import Voter
-from ..LcmRaftMessages import *
+from LcmRaftMessages import *
 import time
 from state import ResponseType,EntryType
 

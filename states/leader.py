@@ -1,6 +1,10 @@
+
+import sys
+sys.path.append("../")
+
 from state import State,ResponseType,EntryType
 from collections import defaultdict
-from ..LcmRaftMessages import *
+from LcmRaftMessages import *
 import time
 
 class Leader(State):

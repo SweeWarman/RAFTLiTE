@@ -1,6 +1,10 @@
+
+import sys
+sys.path.append("../")
+
 import time
 import random
-from ..LcmRaftMessages import *
+from LcmRaftMessages import *
 import enum
 
 class ResponseType(enum.Enum):

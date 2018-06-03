@@ -1,6 +1,9 @@
 from state import State
 
-from ..LcmRaftMessages import *
+import sys
+sys.path.append("../")
+
+from LcmRaftMessages import *
 
 class Voter(State):
 
