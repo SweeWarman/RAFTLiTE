@@ -31,16 +31,15 @@ class request_membership(base):
     def __init__(self):
         self.request = False
 
-class request_vote_t(base):
-
+class request_vote(base):
     def __init__(self):
         self.term = 0
 
-class response_t(base):
+class response(base):
     def __init__(self):
         self.data = False
 
-class vote_response_t(base):
+class vote_response(base):
     def __init__(self):
         self.term = 0
         self.data = False

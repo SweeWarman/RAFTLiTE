@@ -1,6 +1,5 @@
 import sys
 sys.path.append("../")
-from LcmRaftMessages import *
 from states.follower import Follower
 from states.neutral import Neutral
 from states.candidate import Candidate

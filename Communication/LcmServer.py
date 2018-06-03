@@ -2,6 +2,7 @@ import lcm
 import sys
 
 from LcmRaftMessages import *
+from ..Messages.messages import *
 
 class LcmServer(object):
     def __init__(self,server,board):
@@ -60,23 +61,48 @@ class LcmServer(object):
         self._server.on_message(msg)
 
     def send_message(self, message):
-        if type(message) is heartbeat_t:
-            hbeat = message # type: heartbeat_t
+        if type(message) is heartbeat:
+            hbeat = heartbeat_t()
+            hbeat.sender = message.sender
+            hbeat.receiver = message.receiver
             self._lcm.publish("HEARTBEAT",hbeat.encode())
-        elif type(message) is append_entries_t:
-            entry = message # type: append_entries_t
+        elif type(message) is append_entries:
+            entry = append_entries_t()
+            entry.sender = message.sender
+            entry.receiver = message.receiver
+            entry.term = message.term
+            entry.nodes = message.nodes
+            entry.nodeID = message.nodeID
+            entry.entryType = message.entryType
+            entry.logIndex = message.logIndex
+            entry.prevLogIndex = message.prevLogIndex
+            entry.prevLogTerm = message.prevLogTerm
+            entry.data = message.data
             self._lcm.publish(entry.receiver+"_APPEND_ENTRIES",entry.encode())
-        elif type(message) is request_vote_t:
-            reqvote = message # type: request_vote_t
+        elif type(message) is request_vote:
+            reqvote = request_vote_t()
+            reqvote.sender = message.sender
+            reqvote.receiver = message.receiver
+            reqvote.term = message.term
             self._lcm.publish(reqvote.receiver+"_REQUEST_VOTE",reqvote.encode())
-        elif type(message) is vote_response_t:
-            voteresponse = message # type: vote_response_t
+        elif type(message) is vote_response:
+            voteresponse = vote_response_t()
+            voteresponse.sender = message.sender
+            voteresponse.receiver = message.receiver
+            voteresponse.term = message.term
+            voteresponse.data = message.data
             self._lcm.publish(voteresponse.receiver+"_VOTE_RESPONSE",voteresponse.encode())
-        elif type(message) is response_t:
-            response = message # type: response_t
-            self._lcm.publish(response.receiver+"_RESPONSE",response.encode())
-        elif type(message) is request_membership_t:
-            mem_request = message # type: request_membership_t
+        elif type(message) is response:
+            _response = response_t()
+            _response.sender = message.sender
+            _response.receiver = message.receiver
+            _response.data = message.data
+            self._lcm.publish(response.receiver+"_RESPONSE",_response.encode())
+        elif type(message) is request_membership:
+            mem_request = request_membership_t()
+            mem_request.sender = message.sender
+            mem_request.receiver = message.receiver
+            mem_request.request = message.request
             self._lcm.publish(mem_request.receiver+"_MEMBERSHIP",mem_request.encode())
 
 
