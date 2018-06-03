@@ -50,7 +50,7 @@ class Follower(Voter):
         # Add nodeIDs in message to connectedServers if they are
         # not already available
         for i,node in enumerate(message.nodeID):
-            nodeName = "NODE"+str(node)
+            nodeName = node 
             nameListAvail.append(nodeName)
             if nodeName == self._server._name:
                 active = True

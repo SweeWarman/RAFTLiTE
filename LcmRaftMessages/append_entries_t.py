@@ -18,7 +18,7 @@ class append_entries_t(object):
         self.receiver = ""
         self.term = 0
         self.nodes = 0
-        self.nodeID = [ 0 for dim0 in range(10) ]
+        self.nodeID = [ "" for dim0 in range(10) ]
         self.entryType = 0
         self.leaderCommit = 0
         self.logIndex = 0
@@ -43,7 +43,11 @@ class append_entries_t(object):
         buf.write(__receiver_encoded)
         buf.write(b"\0")
         buf.write(struct.pack(">qq", self.term, self.nodes))
-        buf.write(struct.pack('>10q', *self.nodeID[:10]))
+        for i0 in range(10):
+            __nodeID_encoded = self.nodeID[i0].encode('utf-8')
+            buf.write(struct.pack('>I', len(__nodeID_encoded)+1))
+            buf.write(__nodeID_encoded)
+            buf.write(b"\0")
         buf.write(struct.pack(">qqqqq", self.entryType, self.leaderCommit, self.logIndex, self.prevLogIndex, self.prevLogTerm))
         buf.write(struct.pack('>10d', *self.data[:10]))
 
@@ -65,7 +69,10 @@ class append_entries_t(object):
         __receiver_len = struct.unpack('>I', buf.read(4))[0]
         self.receiver = buf.read(__receiver_len)[:-1].decode('utf-8', 'replace')
         self.term, self.nodes = struct.unpack(">qq", buf.read(16))
-        self.nodeID = struct.unpack('>10q', buf.read(80))
+        self.nodeID = []
+        for i0 in range(10):
+            __nodeID_len = struct.unpack('>I', buf.read(4))[0]
+            self.nodeID.append(buf.read(__nodeID_len)[:-1].decode('utf-8', 'replace'))
         self.entryType, self.leaderCommit, self.logIndex, self.prevLogIndex, self.prevLogTerm = struct.unpack(">qqqqq", buf.read(40))
         self.data = struct.unpack('>10d', buf.read(80))
         return self
@@ -74,7 +81,7 @@ class append_entries_t(object):
     _hash = None
     def _get_hash_recursive(parents):
         if append_entries_t in parents: return 0
-        tmphash = (0xc799c49ca0abbcad) & 0xffffffffffffffff
+        tmphash = (0x44223799de472eec) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)

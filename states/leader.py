@@ -158,7 +158,7 @@ class Leader(State):
             entry.term = self._server._currentTerm
             entry.nodes = self._server._total_nodes
             for i, nodes in enumerate(self._server._connectedServers):
-                entry.nodeID[i] = int(nodes[7])
+                entry.nodeID[i] = nodes 
             entry.leaderCommit = self._server._commitIndex
             self._server.send_message(entry)
 
@@ -173,7 +173,7 @@ class Leader(State):
         entry.term = self._server._currentTerm
         entry.nodes = self._server._total_nodes
         for i, nodes in enumerate(self._server._connectedServers):
-            entry.nodeID[i] = int(nodes[7])
+            entry.nodeID[i] = nodes 
 
         entry.logIndex = logIndex
         entry.entryType = log_entry["entryType"]
