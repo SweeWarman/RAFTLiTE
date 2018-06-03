@@ -4,7 +4,7 @@ from state import State,ResponseType
 from follower import Follower
 import time
 
-
+from ..Messages.messages import *
 from LcmRaftMessages import *
 
 class Neutral(State):
@@ -32,7 +32,7 @@ class Neutral(State):
         :return:
         """
         if self.entryRequestMade is False:
-            entry = request_membership_t()
+            entry = request_membership()
             entry.sender = self._server._name
             entry.receiver = message.sender
             entry.request = True
@@ -60,7 +60,7 @@ class Neutral(State):
 
         currentTime = time.time()
         if (currentTime - self.prev_hbeat_time) > 0.5:
-            hbeat = heartbeat_t()
+            hbeat = heartbeat()
             hbeat.sender = self._server._name
             self._server.send_message(hbeat)
             self.prev_hbeat_time = currentTime

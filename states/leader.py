@@ -4,8 +4,8 @@ sys.path.append("../")
 
 from state import State,ResponseType,EntryType
 from collections import defaultdict
-from LcmRaftMessages import *
 import time
+from ..Messages.messages import *
 
 class Leader(State):
 
@@ -34,7 +34,7 @@ class Leader(State):
         if message.sender not in self._server._availableServers:
             self._server._availableServers.append(message.sender)
             print "discovered new server:" + message.sender
-            entry = append_entries_t()
+            entry = append_entries()
             entry.sender = self._server._name
             entry.receiver = message.sender
             self._server.send_message(entry)
@@ -155,7 +155,7 @@ class Leader(State):
         for node in self._server._connectedServers:
             if node == self._server._name:
                 continue
-            entry = append_entries_t()
+            entry = append_entries()
             entry.sender = self._server._name
             entry.receiver = node
             entry.entryType = EntryType.HBEAT.value
@@ -170,7 +170,7 @@ class Leader(State):
 
     def _send_append_entries(self,receiver,logIndex,log_entry):
 
-        entry = append_entries_t()
+        entry = append_entries()
         entry.sender = self._server._name
         entry.receiver = receiver
         entry.entryType = EntryType.DATA.value

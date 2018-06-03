@@ -3,7 +3,7 @@ from state import State
 import sys
 sys.path.append("../")
 
-from LcmRaftMessages import *
+from ..Messages.messages import *
 
 class Voter(State):
 
@@ -24,7 +24,7 @@ class Voter(State):
         return self, None
 
     def _send_vote_response_message(self, msg, yes=True):
-        voteResponse = vote_response_t()
+        voteResponse = vote_response()
         voteResponse.sender = self._server._name
         voteResponse.receiver = msg.sender
         voteResponse.term = msg.term
