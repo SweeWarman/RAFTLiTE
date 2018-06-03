@@ -4,7 +4,6 @@ sys.path.append("../")
 
 from voter import Voter
 from leader import Leader
-from ..Messages.messages import *
 from follower import Follower
 import time, random
 

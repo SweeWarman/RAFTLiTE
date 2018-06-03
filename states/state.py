@@ -4,7 +4,7 @@ sys.path.append("../")
 
 import time
 import random
-from LcmRaftMessages import *
+from Messages.messages import *
 import enum
 
 class ResponseType(enum.Enum):
@@ -36,10 +36,10 @@ class State(object):
 
         """
 
-        if (type(message) is heartbeat_t):
+        if (type(message) is heartbeat):
             return self.on_heartbeat(message)
 
-        if(type(message) is append_entries_t or type(message) is response_t):
+        if(type(message) is append_entries or type(message) is response):
             if (message.term > self._server._currentTerm):
                 print "increasing term"
                 self._server._currentTerm = message.term
@@ -51,17 +51,17 @@ class State(object):
                 print "other server has a lower term"
                 return self, None
 
-        if(type(message) is append_entries_t):
+        if(type(message) is append_entries):
             return self.on_append_entries(message)
-        elif (type(message) is request_vote_t):
+        elif (type(message) is request_vote):
             return self.on_vote_request(message)
-        elif (type(message) is vote_response_t):
+        elif (type(message) is vote_response):
             return self.on_vote_received(message)
-        elif (type(message) is response_t):
+        elif (type(message) is response):
             return self.on_response_received(message)
-        elif (type(message) is request_membership_t):
+        elif (type(message) is request_membership):
             return self.on_membership_request(message)
-        elif (type(message) is client_status_t):
+        elif (type(message) is client_status):
             return self.on_client_status(message)
 
     def on_leader_timeout(self, message):
@@ -108,13 +108,13 @@ class State(object):
 
     def _send_response_message(self, msg, arg):
 
-        response = response_t()
-        response.sender = self._server._name
-        response.receiver = msg.sender
-        response.term = self._server._currentTerm
-        response.data = arg.value
+        _response = response()
+        _response.sender = self._server._name
+        _response.receiver = msg.sender
+        _response.term = self._server._currentTerm
+        _response.data = arg.value
 
-        self._server.send_message(response)
+        self._server.send_message(_response)
 
     def run(self):
         """

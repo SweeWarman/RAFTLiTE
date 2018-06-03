@@ -5,7 +5,7 @@ sys.path.append("../")
 from state import State,ResponseType,EntryType
 from collections import defaultdict
 import time
-from ..Messages.messages import *
+from Messages.messages import *
 
 class Leader(State):
 

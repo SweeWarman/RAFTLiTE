@@ -4,8 +4,7 @@ from state import State,ResponseType
 from follower import Follower
 import time
 
-from ..Messages.messages import *
-from LcmRaftMessages import *
+from Messages.messages import *
 
 class Neutral(State):
 

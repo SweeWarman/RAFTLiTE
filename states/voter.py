@@ -3,7 +3,7 @@ from state import State
 import sys
 sys.path.append("../")
 
-from ..Messages.messages import *
+from Messages.messages import *
 
 class Voter(State):
 
