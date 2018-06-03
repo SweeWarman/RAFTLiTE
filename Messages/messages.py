@@ -37,6 +37,7 @@ class request_vote(base):
 
 class response(base):
     def __init__(self):
+        self.term = 0
         self.data = False
 
 class vote_response(base):

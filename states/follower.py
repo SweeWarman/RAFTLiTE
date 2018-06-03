@@ -102,7 +102,7 @@ class Follower(Voter):
             # We need to hold the induction proof of the algorithm here.
             #   So, we make sure that the prevLogIndex term is always
             #   equal to the server.
-            if (len(log) > 0 and log[_prevLogIndex-1]["term"] != prevLogTerm):
+            if (len(log) > 0 and log[_prevLogIndex-1]["term"] != _prevLogTerm):
 
                 # There is a conflict we need to resync so delete everything
                 #   from this prevLogIndex and forward and send a failure

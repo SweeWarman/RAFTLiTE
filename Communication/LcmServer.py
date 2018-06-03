@@ -3,9 +3,11 @@ import sys
 sys.path.append("../")
 from LcmRaftMessages import *
 from Messages.messages import *
+import threading
 
-class LcmServer(object):
+class LcmServer(threading.Thread):
     def __init__(self,server,board):
+        threading.Thread.__init__(self)
         self._lcm = lcm.LCM()
         self._server = server
         self._board = board
@@ -60,6 +62,7 @@ class LcmServer(object):
         _response.sender = msg.sender
         _response.receiver = msg.receiver
         _response.data = msg.data
+        _response.term = msg.term
         if msg.sender != self._server._name:
             self._server.on_message(_response)
 
@@ -91,8 +94,6 @@ class LcmServer(object):
     def HandleClientStatus(self,channel, data):
         msg = client_status_t.decode(data)
         cstatus = client_status()
-        cstatus.sender = msg.sender
-        cstatus.receiver = msg.receiver
         cstatus.data = msg.data
         self._server.on_message(cstatus)
 
@@ -132,8 +133,9 @@ class LcmServer(object):
             _response = response_t()
             _response.sender = message.sender
             _response.receiver = message.receiver
+            _response.term = message.term
             _response.data = message.data
-            self._lcm.publish(response.receiver+"_RESPONSE",_response.encode())
+            self._lcm.publish(_response.receiver+"_RESPONSE",_response.encode())
         elif type(message) is request_membership:
             mem_request = request_membership_t()
             mem_request.sender = message.sender
@@ -141,13 +143,9 @@ class LcmServer(object):
             mem_request.request = message.request
             self._lcm.publish(mem_request.receiver+"_MEMBERSHIP",mem_request.encode())
 
-
     def run(self):
-        try:
-            while True:
-                self._lcm.handle()
-                message = self._board.get_message()
+        while True:
+            message = self._board.get_message()
+            if message is not None:
                 self.send_message(message)
-        except KeyboardInterrupt:
-            print "Exiting lcm thread"
 

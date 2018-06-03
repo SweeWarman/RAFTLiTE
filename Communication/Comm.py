@@ -8,5 +8,7 @@ class MsgBoard(object):
     def get_message(self):
         if len(self.board) > 0:
             return self.board.pop()
+        else:
+            return None
 
 

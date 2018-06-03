@@ -12,8 +12,13 @@ node = ServerDeamon(name,state,[],board)
 node.daemon = True
 
 lcm = LcmServer(node._server,board)
+lcm.daemon = True
 
-lcm.start()
 node.start()
+lcm.start()
 
-
+try:
+    while True:
+        lcm._lcm.handle()
+except KeyboardInterrupt:
+    print "Exiting lcm thread"

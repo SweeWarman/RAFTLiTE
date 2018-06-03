@@ -6,7 +6,7 @@ from voter import Voter
 from leader import Leader
 from follower import Follower
 import time, random
-
+from Messages.messages import *
 
 class Candidate(Voter):
     def __init__(self):
@@ -44,7 +44,7 @@ class Candidate(Voter):
         for node in self._server._connectedServers:
             if node == self._server._name:
                 continue
-            election = request_vote_t()
+            election = request_vote()
             election.sender = self._server._name
             election.receiver = node
             election.term = self._server._currentTerm
