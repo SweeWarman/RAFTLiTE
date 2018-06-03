@@ -10,6 +10,9 @@ class Follower(Voter):
         self._timeout = timeout
         self._timeoutTime = self._nextTimeout()
         self.name = "FOLLOWER"
+        self.leaderCommit = 0
+        self.prevLogIndex = 0
+        self.prevLogTerm  = 0
 
     def on_response_received(self, message):
         # Was the last AppendEntries good?
@@ -69,7 +72,7 @@ class Follower(Voter):
                     pass
                 print "total nodes:" + str(self._server._total_nodes)
 
-        # TODO: removing follower like this will never work. This follower will not receive anything.
+        # TODO: removing follower like this will never work. This follower will not receive anything afterwards and cannot use another intersection.
         if active != True:
             print "shutting down server"
             self._server._shutdown = True
@@ -78,15 +81,17 @@ class Follower(Voter):
             log = self._server._log
             newlogentry = {}
             
-            newlogentry["leaderCommit"] = message.leaderCommit
-            newlogentry["prevLogIndex"] = message.prevLogIndex
-            newlogentry["prevLogTerm"] = message.prevLogTerm
+            _leaderCommit = message.leaderCommit
+            _prevLogIndex = message.prevLogIndex
+            _prevLogTerm  = message.prevLogTerm
+            newlogentry["entryType"] = message.entryType
+            newlogentry["term"] = message.term
             newlogentry["data"] = message.data
 
 
             # Can't possibly be up-to-date with the log
             # If the log is smaller than the preLogIndex
-            if (len(log) < newlogentry["prevLogIndex"]):
+            if (len(log) < _prevLogIndex):
                 print "APPEND FAILURE"
                 self._send_response_message(message, ResponseType.APPEND_FAILURE)
                 return self, None
@@ -94,17 +99,17 @@ class Follower(Voter):
             # We need to hold the induction proof of the algorithm here.
             #   So, we make sure that the prevLogIndex term is always
             #   equal to the server.
-            if (len(log) > 0 and log[newlogentry["prevLogIndex"]-1]["term"] != newlogentry["prevLogTerm"]):
+            if (len(log) > 0 and log[_prevLogIndex-1]["term"] != prevLogTerm):
 
                 # There is a conflict we need to resync so delete everything
                 #   from this prevLogIndex and forward and send a failure
                 #   to the server.
-                log = log[:newlogentry["prevLogIndex"]]
+                log = log[:_prevLogIndex]
                 print "APPEND FAILURE"
                 self._send_response_message(message, ResponseType.APPEND_FAILURE)
                 self._server._log = log
-                self._server._lastLogIndex = newlogentry["prevLogIndex"]
-                self._server._lastLogTerm = newlogentry["prevLogTerm"]
+                self._server._lastLogIndex = _prevLogIndex
+                self._server._lastLogTerm = _prevLogTerm
                 return self, None
             # The induction proof held so lets check if the commitIndex
             #   value is the same as the one on the leader
@@ -112,17 +117,17 @@ class Follower(Voter):
                 # Make sure that leaderCommit is > 0 and that the
                 #   data is different here
                 if (len(log) > 0 and
-                    len(log) >= newlogentry["leaderCommit"] and
-                    newlogentry["leaderCommit"] > 0 and
-                    log[newlogentry["leaderCommit"]-1]["term"] != message.term):
+                    len(log) >= _leaderCommit and
+                    _leaderCommit > 0 and
+                    log[_leaderCommit-1]["term"] != message.term):
                     # Data was found to be different so we fix that
                     #   by taking the current log and slicing it to the
                     #   leaderCommit + 1 range then setting the last
                     #   value to the commitValue
                     log = log[:self._server._commitIndex]
                     entry = {}
-                    entry["term"] = message.term
                     entry["entryType"] = message.entryType
+                    entry["term"] = message.term
                     entry["data"] = message.data
                     
 
@@ -130,7 +135,7 @@ class Follower(Voter):
                     self._send_response_message(message,ResponseType.APPEND_SUCCESS)
                     self._server._lastLogIndex = len(log)
                     self._server._lastLogTerm = log[-1]["term"]
-                    self._server._commitIndex = min(newlogentry["leaderCommit"],len(log))
+                    self._server._commitIndex = min(_leaderCommit,len(log))
                     self._server._log = log
 
 
@@ -156,7 +161,7 @@ class Follower(Voter):
                     log.append(entry)
                     self._server._lastLogIndex = max(0,len(log))
                     self._server._lastLogTerm = max(0,log[-1]["term"])
-                    self._server._commitIndex = min(newlogentry["leaderCommit"],len(log))
+                    self._server._commitIndex = min(_leaderCommit,len(log))
                     self._server._log = log
                     self._send_response_message(message,ResponseType.APPEND_SUCCESS)
 
