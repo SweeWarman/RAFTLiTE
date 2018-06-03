@@ -1,19 +1,20 @@
-from ..LcmRaftMessages import *
-from ..states.follower import Follower
-from ..states.neutral import Neutral
-from ..states.candidate import Candidate
-from ..states.leader import Leader
+import sys
+sys.path.append("../")
+from LcmRaftMessages import *
+from states.follower import Follower
+from states.neutral import Neutral
+from states.candidate import Candidate
+from states.leader import Leader
 import threading
 
 class Server():
 
-    def __init__(self, name, state, log, lc):
+    def __init__(self, name, state, log, board):
         self.threadLock = threading.Lock()
         self._name = name
         self._state = state
         self._total_nodes = 1
-        self._lc = lc
-        self._state.set_server(self)
+        self._board = board
         self._currentTerm = 0
         self._connectedServers = []
         self._availableServers = []
@@ -27,26 +28,10 @@ class Server():
         self._shutdown = False
         self._shutdownRequest = False
         self._expectResponse = False #TODO: hack - this should go away if you implement the cluster membership part.
+        self._state.set_server(self)
 
     def send_message(self, message):
-        if type(message) is heartbeat_t:
-            hbeat = message # type: heartbeat_t
-            self._lc.publish("HEARTBEAT",hbeat.encode())
-        elif type(message) is append_entries_t:
-            entry = message # type: append_entries_t
-            self._lc.publish(entry.receiver+"_APPEND_ENTRIES",entry.encode())
-        elif type(message) is request_vote_t:
-            reqvote = message # type: request_vote_t
-            self._lc.publish(reqvote.receiver+"_REQUEST_VOTE",reqvote.encode())
-        elif type(message) is vote_response_t:
-            voteresponse = message # type: vote_response_t
-            self._lc.publish(voteresponse.receiver+"_VOTE_RESPONSE",voteresponse.encode())
-        elif type(message) is response_t:
-            response = message # type: response_t
-            self._lc.publish(response.receiver+"_RESPONSE",response.encode())
-        elif type(message) is request_membership_t:
-            mem_request = message # type: request_membership_t
-            self._lc.publish(mem_request.receiver+"_MEMBERSHIP",mem_request.encode())
+        self._board.send_message(message)
 
     def on_message(self, message):
 
@@ -144,36 +129,3 @@ class ServerDeamon(threading.Thread):
     def run(self):
         while not self.stopped():
             self._server.run()
-
-    def HandleHeartBeat(self,channel, data):
-        msg = heartbeat_t.decode(data)
-        if msg.sender != self._server._name:
-            self._server.on_message(msg)
-
-    def HandleRequestVote(self,channel, data):
-        msg = request_vote_t.decode(data)
-        if msg.sender != self._server._name:
-            self._server.on_message(msg)
-
-    def HandleVoteResponse(self,channel, data):
-        msg = vote_response_t.decode(data)
-        if msg.sender != self._server._name:
-            self._server.on_message(msg)
-
-    def HandleResponse(self,channel, data):
-        msg = response_t.decode(data)
-        if msg.sender != self._server._name:
-            self._server.on_message(msg)
-
-    def HandleAppendEntries(self,channel, data):
-        msg = append_entries_t.decode(data)
-        if msg.sender != self._server._name:
-            self._server.on_message(msg)
-
-    def HandleMemberShip(self, channel, data):
-        msg = request_membership_t.decode(data)
-        self._server.on_message(msg)
-
-    def HandleClientStatus(self,channel, data):
-        msg = client_status_t.decode(data)
-        self._server.on_message(msg)
