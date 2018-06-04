@@ -10,7 +10,7 @@ except ImportError:
 import struct
 
 class append_entries_t(object):
-    __slots__ = ["timeStamp", "sender", "receiver", "term", "nodes", "nodeID", "entryType", "leaderCommit", "logIndex", "prevLogIndex", "prevLogTerm", "data"]
+    __slots__ = ["timeStamp", "sender", "receiver", "term", "nodes", "nodeID", "entryType", "leaderCommit", "logIndex", "prevLogIndex", "prevLogTerm", "n", "data"]
 
     def __init__(self):
         self.timeStamp = 0
@@ -24,7 +24,8 @@ class append_entries_t(object):
         self.logIndex = 0
         self.prevLogIndex = 0
         self.prevLogTerm = 0
-        self.data = [ 0.0 for dim0 in range(5) ]
+        self.n = 0
+        self.data = []
 
     def encode(self):
         buf = BytesIO()
@@ -48,8 +49,8 @@ class append_entries_t(object):
             buf.write(struct.pack('>I', len(__nodeID_encoded)+1))
             buf.write(__nodeID_encoded)
             buf.write(b"\0")
-        buf.write(struct.pack(">qqqqq", self.entryType, self.leaderCommit, self.logIndex, self.prevLogIndex, self.prevLogTerm))
-        buf.write(struct.pack('>5d', *self.data[:5]))
+        buf.write(struct.pack(">qqqqqq", self.entryType, self.leaderCommit, self.logIndex, self.prevLogIndex, self.prevLogTerm, self.n))
+        buf.write(struct.pack('>%dd' % self.n, *self.data[:self.n]))
 
     def decode(data):
         if hasattr(data, 'read'):
@@ -73,15 +74,15 @@ class append_entries_t(object):
         for i0 in range(10):
             __nodeID_len = struct.unpack('>I', buf.read(4))[0]
             self.nodeID.append(buf.read(__nodeID_len)[:-1].decode('utf-8', 'replace'))
-        self.entryType, self.leaderCommit, self.logIndex, self.prevLogIndex, self.prevLogTerm = struct.unpack(">qqqqq", buf.read(40))
-        self.data = struct.unpack('>5d', buf.read(40))
+        self.entryType, self.leaderCommit, self.logIndex, self.prevLogIndex, self.prevLogTerm, self.n = struct.unpack(">qqqqqq", buf.read(48))
+        self.data = struct.unpack('>%dd' % self.n, buf.read(self.n * 8))
         return self
     _decode_one = staticmethod(_decode_one)
 
     _hash = None
     def _get_hash_recursive(parents):
         if append_entries_t in parents: return 0
-        tmphash = (0x5e44223799de4832) & 0xffffffffffffffff
+        tmphash = (0x9e6eb85cb43b33f9) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)

@@ -15,11 +15,11 @@ class append_entries(base):
         self.logIndex = 0
         self.prevLogIndex = 0
         self.prevLogTerm = 0
-        self.data = [ 0.0 for dim0 in range(10) ]
+        self.data = []
 
 class client_status(base):
     def __init__(self):
-        self.data = [ 0.0 for dim0 in range(10) ]
+        self.data = []
 
 class heartbeat(base):
     def __init__(self):

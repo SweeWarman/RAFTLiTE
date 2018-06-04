@@ -116,8 +116,8 @@ class LcmServer(threading.Thread):
             entry.leaderCommit = message.leaderCommit
             entry.prevLogIndex = message.prevLogIndex
             entry.prevLogTerm = message.prevLogTerm
+            entry.n = len(message.data)
             entry.data = message.data
-
             self._lcm.publish(entry.receiver+"_APPEND_ENTRIES",entry.encode())
         elif type(message) is request_vote:
             reqvote = request_vote_t()

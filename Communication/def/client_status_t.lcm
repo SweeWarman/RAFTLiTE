@@ -5,5 +5,6 @@ struct client_status_t
     int64_t timeStamp;
     
     // data
-    double data[5];
+    int64_t n;
+    double data[n];
 }

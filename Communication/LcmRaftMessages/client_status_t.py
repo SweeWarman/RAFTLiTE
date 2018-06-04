@@ -10,11 +10,12 @@ except ImportError:
 import struct
 
 class client_status_t(object):
-    __slots__ = ["timeStamp", "data"]
+    __slots__ = ["timeStamp", "n", "data"]
 
     def __init__(self):
         self.timeStamp = 0
-        self.data = [ 0.0 for dim0 in range(5) ]
+        self.n = 0
+        self.data = []
 
     def encode(self):
         buf = BytesIO()
@@ -23,8 +24,8 @@ class client_status_t(object):
         return buf.getvalue()
 
     def _encode_one(self, buf):
-        buf.write(struct.pack(">q", self.timeStamp))
-        buf.write(struct.pack('>5d', *self.data[:5]))
+        buf.write(struct.pack(">qq", self.timeStamp, self.n))
+        buf.write(struct.pack('>%dd' % self.n, *self.data[:self.n]))
 
     def decode(data):
         if hasattr(data, 'read'):
@@ -38,15 +39,15 @@ class client_status_t(object):
 
     def _decode_one(buf):
         self = client_status_t()
-        self.timeStamp = struct.unpack(">q", buf.read(8))[0]
-        self.data = struct.unpack('>5d', buf.read(40))
+        self.timeStamp, self.n = struct.unpack(">qq", buf.read(16))
+        self.data = struct.unpack('>%dd' % self.n, buf.read(self.n * 8))
         return self
     _decode_one = staticmethod(_decode_one)
 
     _hash = None
     def _get_hash_recursive(parents):
         if client_status_t in parents: return 0
-        tmphash = (0x91dcc0ad9b89bde7) & 0xffffffffffffffff
+        tmphash = (0xb09c9e11c33beb11) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)
