@@ -17,8 +17,6 @@ class ResponseType(enum.Enum):
 class EntryType(enum.Enum):
     HBEAT = 0
     DATA  = 1
-    COMMAND = 2
-    CONFIGURATION = 3
 
 class State(object):
 

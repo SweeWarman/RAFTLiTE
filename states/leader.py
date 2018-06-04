@@ -68,23 +68,9 @@ class Leader(State):
                 if sum(element["data"]) == sum(entry["data"]):
                         #print "Entry already available"
                         return True
-            if element["entryType"] == EntryType.COMMAND.value:
-                return False
 
 
         return False
-
-
-    def SendComputeCommand(self,id):
-
-        self._server.threadLock.acquire()
-        log_entry = {}
-        log_entry["entryType"] = EntryType.COMMAND.value
-        log_entry["term"] = self._server._currentTerm
-
-        self._server._log.append(log_entry)
-        self._server._lastLogIndex += 1
-        self._server.threadLock.release()
 
     def on_response_received(self, message):
         # Was the last AppendEntries good?
