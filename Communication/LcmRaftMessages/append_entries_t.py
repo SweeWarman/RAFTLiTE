@@ -24,7 +24,7 @@ class append_entries_t(object):
         self.logIndex = 0
         self.prevLogIndex = 0
         self.prevLogTerm = 0
-        self.data = [ 0.0 for dim0 in range(10) ]
+        self.data = [ 0.0 for dim0 in range(5) ]
 
     def encode(self):
         buf = BytesIO()
@@ -49,7 +49,7 @@ class append_entries_t(object):
             buf.write(__nodeID_encoded)
             buf.write(b"\0")
         buf.write(struct.pack(">qqqqq", self.entryType, self.leaderCommit, self.logIndex, self.prevLogIndex, self.prevLogTerm))
-        buf.write(struct.pack('>10d', *self.data[:10]))
+        buf.write(struct.pack('>5d', *self.data[:5]))
 
     def decode(data):
         if hasattr(data, 'read'):
@@ -74,14 +74,14 @@ class append_entries_t(object):
             __nodeID_len = struct.unpack('>I', buf.read(4))[0]
             self.nodeID.append(buf.read(__nodeID_len)[:-1].decode('utf-8', 'replace'))
         self.entryType, self.leaderCommit, self.logIndex, self.prevLogIndex, self.prevLogTerm = struct.unpack(">qqqqq", buf.read(40))
-        self.data = struct.unpack('>10d', buf.read(80))
+        self.data = struct.unpack('>5d', buf.read(40))
         return self
     _decode_one = staticmethod(_decode_one)
 
     _hash = None
     def _get_hash_recursive(parents):
         if append_entries_t in parents: return 0
-        tmphash = (0x44223799de472eec) & 0xffffffffffffffff
+        tmphash = (0x5e44223799de4832) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)

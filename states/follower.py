@@ -103,6 +103,13 @@ class Follower(Voter):
             # We need to hold the induction proof of the algorithm here.
             #   So, we make sure that the prevLogIndex term is always
             #   equal to the server.
+
+            try:
+                if len(log)>0:
+                    _test_entry = log[_prevLogIndex-1]
+            except IndexError:
+                import pdb; pdb.set_trace()
+
             if (len(log) > 0 and log[_prevLogIndex-1]["term"] != _prevLogTerm):
 
                 # There is a conflict we need to resync so delete everything
@@ -134,18 +141,18 @@ class Follower(Voter):
                     entry["term"] = message.term
                     entry["data"] = message.data
                     
+                    if entry["entryType"] == EntryType.DATA.value:
+                        log.append(entry)
+                        self._send_response_message(message,ResponseType.APPEND_SUCCESS)
+                        print "*** Start Log ****"
+                        for entry in log:
+                            print entry
 
-                    log.append(entry)
-                    self._send_response_message(message,ResponseType.APPEND_SUCCESS)
                     self._server._lastLogIndex = len(log)
                     self._server._lastLogTerm = log[-1]["term"]
                     self._server._commitIndex = min(_leaderCommit,len(log))
                     self._server._log = log
 
-
-                    print "*** Start Log ****"
-                    for entry in log: 
-                        print entry
                 else:
                     # The commit index is not out of the range of the log
                     #   so we can just append it to the log now.
@@ -174,7 +181,7 @@ class Follower(Voter):
 
     
                     print "*** Start Log ****"
-                    for entry in log: 
+                    for entry in log:
                         print entry
 
 

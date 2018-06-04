@@ -78,6 +78,7 @@ class LcmServer(threading.Thread):
         entry.logIndex = msg.logIndex
         entry.prevLogIndex = msg.prevLogIndex
         entry.prevLogTerm = msg.prevLogTerm
+        entry.leaderCommit = msg.leaderCommit
         entry.data = msg.data
         if msg.sender != self._server._name:
             self._server.on_message(entry)
@@ -112,9 +113,11 @@ class LcmServer(threading.Thread):
             entry.nodeID = message.nodeID
             entry.entryType = message.entryType
             entry.logIndex = message.logIndex
+            entry.leaderCommit = message.leaderCommit
             entry.prevLogIndex = message.prevLogIndex
             entry.prevLogTerm = message.prevLogTerm
             entry.data = message.data
+
             self._lcm.publish(entry.receiver+"_APPEND_ENTRIES",entry.encode())
         elif type(message) is request_vote:
             reqvote = request_vote_t()

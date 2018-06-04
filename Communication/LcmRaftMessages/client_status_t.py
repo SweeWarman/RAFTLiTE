@@ -14,7 +14,7 @@ class client_status_t(object):
 
     def __init__(self):
         self.timeStamp = 0
-        self.data = [ 0.0 for dim0 in range(10) ]
+        self.data = [ 0.0 for dim0 in range(5) ]
 
     def encode(self):
         buf = BytesIO()
@@ -24,7 +24,7 @@ class client_status_t(object):
 
     def _encode_one(self, buf):
         buf.write(struct.pack(">q", self.timeStamp))
-        buf.write(struct.pack('>10d', *self.data[:10]))
+        buf.write(struct.pack('>5d', *self.data[:5]))
 
     def decode(data):
         if hasattr(data, 'read'):
@@ -39,14 +39,14 @@ class client_status_t(object):
     def _decode_one(buf):
         self = client_status_t()
         self.timeStamp = struct.unpack(">q", buf.read(8))[0]
-        self.data = struct.unpack('>10d', buf.read(80))
+        self.data = struct.unpack('>5d', buf.read(40))
         return self
     _decode_one = staticmethod(_decode_one)
 
     _hash = None
     def _get_hash_recursive(parents):
         if client_status_t in parents: return 0
-        tmphash = (0x233f526476431c53) & 0xffffffffffffffff
+        tmphash = (0x91dcc0ad9b89bde7) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)

@@ -17,5 +17,5 @@ struct append_entries_t
     int64_t prevLogTerm;
 
     // data
-    double data[10];
+    double data[5];
 }

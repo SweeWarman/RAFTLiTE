@@ -16,19 +16,22 @@ class Leader(State):
         self._nextIndexes = defaultdict(int)
         self._matchIndex = defaultdict(int)
         self.name = "LEADER"
+        self._ready = False
 
 
     def set_server(self, server):
 
         self._server = server
         self._server._leader = self._server._name
-        self._send_append_entries_hbeat()
 
         for n in self._server._connectedServers:
             if n == self._server._name:
                 continue
             self._nextIndexes[n] = self._server._lastLogIndex + 1
             self._matchIndex[n] = 0
+
+        self._ready = True
+        self._send_append_entries_hbeat()
 
     def on_heartbeat(self, message):
         if message.sender not in self._server._availableServers:
@@ -47,11 +50,6 @@ class Leader(State):
         log_entry["entryType"] = EntryType.DATA.value
         log_entry["term"] = self._server._currentTerm
         log_entry["data"] = message.data 
-        #log_entry["intersectionID"] = message.intersectionID
-        #log_entry["vehicleID"] = message.vehicleID
-        #log_entry["entryTime"] = message.entryTime
-        #log_entry["exitTime"] = message.exitTime
-        #log_entry["crossingTime"] = message.crossingTime
 
         if not self.CheckIfAlreadyAvailable(log_entry):
             self._server._log.append(log_entry)
@@ -96,7 +94,7 @@ class Leader(State):
 
             # Get the next log entry to send to the client.
             logIndex = max(0,self._nextIndexes[message.sender])
-            current = self._server._log[logIndex]
+            current = self._server._log[logIndex-1]
 
             self._send_append_entries(message.sender,logIndex,current)
 
@@ -106,9 +104,6 @@ class Leader(State):
             self._nextIndexes[message.sender] += 1
 
             # Are they caught up?
-            #if (self._nextIndexes[message.sender] > self._server._lastLogIndex):
-                #self._nextIndexes[message.sender] = self._server._lastLogIndex
-
             print "entry appended successfully in " + message.sender
 
             for N in range(self._server._commitIndex + 1, self._server._lastLogIndex + 1):
@@ -125,7 +120,7 @@ class Leader(State):
         if message.request == True:
             self._server._total_nodes = self._server._total_nodes + 1
             self._server._connectedServers.append(message.sender)
-            self._nextIndexes[message.sender] = self._server._lastLogIndex
+            self._nextIndexes[message.sender] = self._server._lastLogIndex + 1
             self._matchIndex[message.sender] = 0
         else:
             self._server._total_nodes -= 1
@@ -150,6 +145,7 @@ class Leader(State):
         return self,None
 
     def _send_append_entries_hbeat(self):
+
         for node in self._server._connectedServers:
             if node == self._server._name:
                 continue
@@ -162,7 +158,15 @@ class Leader(State):
             for i, nodes in enumerate(self._server._connectedServers):
                 entry.nodeID[i] = nodes 
             entry.leaderCommit = self._server._commitIndex
+
+            entry.prevLogIndex = self._nextIndexes[node]-1
+            if entry.prevLogIndex > 0:
+                entry.prevLogTerm = self._server._log[entry.prevLogIndex-1]["term"]
+            else:
+                entry.prevLogTerm = 0
+
             self._server.send_message(entry)
+
 
         self._prev_entry_time = time.time()
 
@@ -179,19 +183,9 @@ class Leader(State):
         entry.logIndex = logIndex
         entry.entryType = log_entry["entryType"]
         entry.term = log_entry["term"]
+        entry.leaderCommit = self._server._commitIndex
         if entry.entryType == EntryType.DATA.value:
             entry.data = log_entry["data"]
-            #entry.vehicleID = log_entry["vehicleID"]
-            #entry.leaderCommit = self._server._commitIndex
-            #entry.entryTime = log_entry["entryTime"]
-            #entry.exitTime = log_entry["exitTime"]
-            #entry.crossingTime = log_entry["crossingTime"]
-        #else:
-            #entry.vehicleID = "NONE"
-            #entry.leaderCommit = 0
-            #entry.entryTime = 0
-            #entry.exitTime = 0
-            #entry.crossingTime = 0
 
         entry.prevLogIndex = self._nextIndexes[receiver]-1
         if entry.prevLogIndex > 0:
@@ -219,46 +213,47 @@ class Leader(State):
 
 
     def run(self):
-        self._currentTime = time.time()
-        sent = False
+        if self._ready:
+            self._currentTime = time.time()
+            sent = False
 
-        if (self._currentTime - self._prev_entry_time) > 0.3:
-            self._prev_entry_time = time.time()
-            if self._currentTerm < self._server._currentTerm:
-                return False
+            if (self._currentTime - self._prev_entry_time) > 0.3:
+                self._prev_entry_time = time.time()
+                if self._currentTerm < self._server._currentTerm:
+                    return False
 
-            for follower in self._server._connectedServers:
-                if follower == self._server._name:
-                    continue
+                for follower in self._server._connectedServers:
+                    if follower == self._server._name:
+                        continue
 
-                if self._server._lastLogIndex >= self._nextIndexes[follower]:
-                    # NOTE: _lastLogIndex assume 1 is the first entry in the log
-                    print "sending entry to: " + follower
-                    logIndex = self._nextIndexes[follower]
-                    log_entry = self._server._log[logIndex-1]
-                    print "*** Start Log ****"
-                    print log_entry
-                    self._send_append_entries(follower,logIndex,log_entry)
-                    sent = True
+                    if self._server._lastLogIndex > 0 and self._server._lastLogIndex >= self._nextIndexes[follower]:
+                        # NOTE: _lastLogIndex assumes 1 is the first entry in the log
+                        print "sending entry to: " + follower
+                        logIndex = self._nextIndexes[follower]
+                        log_entry = self._server._log[logIndex-1]
+                        print "*** Start Log ****"
+                        print log_entry
+                        self._send_append_entries(follower,logIndex,log_entry)
+                        sent = True
 
-            if not sent:
-                self._send_append_entries_hbeat()
+                if not sent:
+                    self._send_append_entries_hbeat()
 
-        if self._server._shutdownRequest:
-            shutdown = False
-            for name in self._server._connectedServers:
-                print name
-                print self._matchIndex[name],self._server._commitIndex
-                if name == self._server._name:
-                    shutdown = True
-                elif self._matchIndex[name] == self._server._commitIndex:
-                    shutdown = True
-                else:
-                    shutdown = False
+            if self._server._shutdownRequest:
+                shutdown = False
+                for name in self._server._connectedServers:
+                    print name
+                    print self._matchIndex[name],self._server._commitIndex
+                    if name == self._server._name:
+                        shutdown = True
+                    elif self._matchIndex[name] == self._server._commitIndex:
+                        shutdown = True
+                    else:
+                        shutdown = False
 
-            if shutdown:
-                print "shutting down server"
-                self._server._shutdown = True
+                if shutdown:
+                    print "shutting down server"
+                    self._server._shutdown = True
 
 
         return True
