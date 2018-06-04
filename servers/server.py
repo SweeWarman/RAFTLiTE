@@ -34,6 +34,9 @@ class Server():
 
     def on_message(self, message):
 
+        if message is None:
+            return
+
         if self._shutdown is True:
             return
 

@@ -95,10 +95,8 @@ class Leader(State):
             self._nextIndexes[message.sender] -= 1
 
             # Get the next log entry to send to the client.
-            logIndex = self._nextIndexes[message.sender]
-            #previousIndex = max(0, logIndex - 1)
-            #previous = self._server._log[previousIndex-1]
-            current = self._server._log[logIndex-1]
+            logIndex = max(0,self._nextIndexes[message.sender])
+            current = self._server._log[logIndex]
 
             self._send_append_entries(message.sender,logIndex,current)
 
@@ -174,14 +172,13 @@ class Leader(State):
         entry.sender = self._server._name
         entry.receiver = receiver
         entry.entryType = EntryType.DATA.value
-        entry.term = self._server._currentTerm
         entry.nodes = self._server._total_nodes
         for i, nodes in enumerate(self._server._connectedServers):
             entry.nodeID[i] = nodes 
 
         entry.logIndex = logIndex
         entry.entryType = log_entry["entryType"]
-
+        entry.term = log_entry["term"]
         if entry.entryType == EntryType.DATA.value:
             entry.data = log_entry["data"]
             #entry.vehicleID = log_entry["vehicleID"]

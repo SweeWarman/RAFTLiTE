@@ -80,7 +80,8 @@ class Follower(Voter):
             print "shutting down server"
             self._server._shutdown = True
 
-        if (message.entryType != EntryType.HBEAT.value):
+        #if (message.entryType != EntryType.HBEAT.value):
+        if (True):
             log = self._server._log
             newlogentry = {}
             
@@ -151,6 +152,9 @@ class Follower(Voter):
                     #   commitIndex = len(log)
                     #   Is this a heartbeat?
                     #print "received new append entry"
+                    if(message.entryType == EntryType.HBEAT.value):
+                        return self,None
+
                     if (message.logIndex == self._server._lastLogIndex and
                         message.term == self._server._lastLogTerm):
                         return self,None
