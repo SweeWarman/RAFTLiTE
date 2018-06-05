@@ -23,7 +23,6 @@ class client_status(base):
 
 class heartbeat(base):
     def __init__(self):
-        self.timeStamp = 0
         self.sender = ""
         self.receiver = ""
 
