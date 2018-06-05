@@ -47,10 +47,12 @@ class Leader(State):
         log_entry["term"] = self._server._currentTerm
         log_entry["data"] = message.data 
 
-        if not self.CheckIfAlreadyAvailable(log_entry):
-            self._server._log.append(log_entry)
-            self._server._lastLogIndex += 1
-            print "received new client status from" 
+        self._server._log.append(log_entry)
+        self._server._lastLogIndex += 1
+        #if not self.CheckIfAlreadyAvailable(log_entry):
+        #    self._server._log.append(log_entry)
+        #    self._server._lastLogIndex += 1
+            #print "received new client status from"
 
 
         return self,None
