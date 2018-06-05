@@ -1,9 +1,9 @@
 import sys
 
-from .states.neutral import Neutral
-from .servers.server import ServerDeamon
-from .Communication.Comm import *
-from .Communication.LcmServer import *
+from RAFTLiTE.states.neutral import Neutral
+from RAFTLiTE.servers.server import ServerDeamon
+from RAFTLiTE.Communication.Comm import *
+from RAFTLiTE.Communication.LcmServer import *
 
 name = sys.argv[1]
 
