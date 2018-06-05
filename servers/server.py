@@ -1,9 +1,7 @@
-import sys
-sys.path.append("../")
-from states.follower import Follower
-from states.neutral import Neutral
-from states.candidate import Candidate
-from states.leader import Leader
+from ..states.follower import Follower
+from ..states.neutral import Neutral
+from ..states.candidate import Candidate
+from ..states.leader import Leader
 import threading
 
 class Server():

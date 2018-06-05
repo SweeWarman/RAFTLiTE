@@ -1,8 +1,6 @@
 import lcm
-import sys
-sys.path.append("../")
 from LcmRaftMessages import *
-from Messages.messages import *
+from ..Messages.messages import *
 import threading
 
 class LcmServer(threading.Thread):

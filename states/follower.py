@@ -1,7 +1,4 @@
 
-import sys
-sys.path.append("../")
-
 from voter import Voter
 import time
 from state import ResponseType,EntryType

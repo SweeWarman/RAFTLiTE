@@ -1,14 +1,12 @@
 import unittest
 
-import sys
-sys.path.append("../")
-from Messages.messages import *
-from servers.server import Server
-from states.follower import Follower
-from states.candidate import Candidate
-from states.leader import Leader
-from states.state import EntryType
-from Communication.Comm import MsgBoard
+from ..Messages.messages import *
+from ..servers.server import Server
+from ..states.follower import Follower
+from ..states.candidate import Candidate
+from ..states.leader import Leader
+from ..states.state import EntryType
+from ..Communication.Comm import MsgBoard
 
 class TestLeaderServer( unittest.TestCase ):
 

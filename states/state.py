@@ -1,10 +1,7 @@
 
-import sys
-sys.path.append("../")
-
 import time
 import random
-from Messages.messages import *
+from ..Messages.messages import *
 import enum
 
 class ResponseType(enum.Enum):

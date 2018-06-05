@@ -1,12 +1,9 @@
 
-import sys
-sys.path.append("../")
-
 from voter import Voter
 from leader import Leader
 from follower import Follower
 import time, random
-from Messages.messages import *
+from ..Messages.messages import *
 
 class Candidate(Voter):
     def __init__(self):

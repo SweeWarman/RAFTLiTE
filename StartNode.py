@@ -1,7 +1,9 @@
-from states.neutral import Neutral
-from servers.server import ServerDeamon
-from Communication.Comm import *
-from Communication.LcmServer import *
+import sys
+
+from .states.neutral import Neutral
+from .servers.server import ServerDeamon
+from .Communication.Comm import *
+from .Communication.LcmServer import *
 
 name = sys.argv[1]
 
