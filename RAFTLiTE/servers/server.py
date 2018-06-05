@@ -2,6 +2,7 @@ from ..states.follower import Follower
 from ..states.neutral import Neutral
 from ..states.candidate import Candidate
 from ..states.leader import Leader
+from ..Messages.messages import request_membership
 import threading
 
 class Server():
@@ -78,6 +79,14 @@ class Server():
         self._lastLogTerm = None
         self._state.set_server(self)
         self.threadLock.release()
+
+    def leave_network(self):
+        if self._leader is not self._name:
+            request = request_membership()
+            request.sender = self._name
+            request.receiver = self._leader
+            request.request = False
+            self.send_message(request)
 
     def run(self):
 
